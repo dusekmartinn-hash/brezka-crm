@@ -1361,72 +1361,119 @@ if nav == "📋 Oslovování":
     page_header("📋 Týmové oslovování",
                 "Přiřaď školu → pošli email → označ jako osloveno")
 
-    # ── Dashboard — tabulka s rozpadem stavů ────────────────
+    # ── Dashboard — interaktivní tabulka s rozpadem stavů ───
     _STAVY_DASH = [
-        ("Osloveno",         "🔵", "#3b82f6"),
-        ("Jednáme",          "🟡", "#f59e0b"),
-        ("Nabídka",          "🟣", "#8b5cf6"),
-        ("Ozvat se později", "⏳", "#64748b"),
-        ("Nemají zájem",     "🔴", "#ef4444"),
-        ("Vyhráno 🎉",       "🏆", "#22c55e"),
+        ("Osloveno",         "#3b82f6"),
+        ("Jednáme",          "#f59e0b"),
+        ("Nabídka",          "#8b5cf6"),
+        ("Ozvat se později", "#64748b"),
+        ("Nemají zájem",     "#ef4444"),
+        ("Vyhráno 🎉",       "#22c55e"),
     ]
 
-    # Header
-    _th = ''.join(
-        f'<th style="font-size:10px;font-weight:700;color:#a0aec0;text-transform:uppercase;'
-        f'letter-spacing:0.4px;padding:6px 8px;text-align:center;white-space:nowrap;"'
-        f' title="{s}">{icon}</th>'
-        for s, icon, _ in _STAVY_DASH
-    )
-    # Rows
-    _tbody = ""
+    # Aktivní filtr z dashboardu
+    _active_person = st.session_state.get("_dash_person", None)
+    _active_stav = st.session_state.get("_dash_stav", None)
+
+    # Reset tlačítko pokud je filtr aktivní
+    if _active_person or _active_stav:
+        _filt_label = ""
+        if _active_person:
+            _filt_label += _active_person
+        if _active_stav:
+            _filt_label += f" → {_active_stav}"
+        _r1, _r2 = st.columns([6, 1])
+        with _r1:
+            st.markdown(
+                f'<div style="font-size:12px;color:#3b82f6;font-weight:600;padding:4px 0;">'
+                f'Filtr: {_filt_label}</div>',
+                unsafe_allow_html=True)
+        with _r2:
+            if st.button("✕ Zrušit filtr", key="dash_reset", use_container_width=True):
+                st.session_state["_dash_person"] = None
+                st.session_state["_dash_stav"] = None
+                st.rerun()
+
+    # Header row
+    _hdr_cols = st.columns([1.2, 0.6, 0.6, 0.6] + [0.8] * len(_STAVY_DASH))
+    _hdr_cols[0].markdown(
+        '<div style="font-size:10px;font-weight:700;color:#a0aec0;text-transform:uppercase;'
+        'letter-spacing:0.5px;padding:6px 0;">Člen</div>', unsafe_allow_html=True)
+    _hdr_cols[1].markdown(
+        '<div style="font-size:10px;font-weight:700;color:#a0aec0;text-transform:uppercase;'
+        'letter-spacing:0.5px;padding:6px 0;text-align:center;">Dnes</div>', unsafe_allow_html=True)
+    _hdr_cols[2].markdown(
+        '<div style="font-size:10px;font-weight:700;color:#a0aec0;text-transform:uppercase;'
+        'letter-spacing:0.5px;padding:6px 0;text-align:center;">Týden</div>', unsafe_allow_html=True)
+    _hdr_cols[3].markdown(
+        '<div style="font-size:10px;font-weight:700;color:#a0aec0;text-transform:uppercase;'
+        'letter-spacing:0.5px;padding:6px 0;text-align:center;">Celkem</div>', unsafe_allow_html=True)
+    for _si, (_sn, _sc) in enumerate(_STAVY_DASH):
+        _hdr_cols[4 + _si].markdown(
+            f'<div style="font-size:10px;font-weight:700;color:{_sc};text-transform:uppercase;'
+            f'letter-spacing:0.3px;padding:6px 0;text-align:center;white-space:nowrap;'
+            f'overflow:hidden;text-overflow:ellipsis;">{_sn.replace(" 🎉","")}</div>',
+            unsafe_allow_html=True)
+
+    st.markdown('<hr style="margin:0;border-color:#ece8e1;">', unsafe_allow_html=True)
+
+    # Data rows — clickable buttons
     for _tn in TEAM:
         _person_log = [o for o in _olog if o["person"] == _tn]
         _cnt_today = _count_by(_tn, today)
         _cnt_week = _count_by(_tn, week_start)
         _cnt_total = len(_person_log)
         _today_clr = "#22c55e" if _cnt_today >= 5 else "#f59e0b" if _cnt_today >= 1 else "#94a3b8"
+        _is_active_person = (_active_person == _tn)
 
-        # Stav counts
-        _stav_cells = ""
-        for _sn, _si, _sc in _STAVY_DASH:
+        _row_cols = st.columns([1.2, 0.6, 0.6, 0.6] + [0.8] * len(_STAVY_DASH))
+
+        # Jméno — klik filtruje na osobu
+        with _row_cols[0]:
+            _name_style = "font-weight:800;color:#1a1a2e;" if _is_active_person else "font-weight:600;color:#2d3748;"
+            if st.button(_tn, key=f"dp_{_tn}", use_container_width=True):
+                st.session_state["_dash_person"] = _tn if not _is_active_person else None
+                st.session_state["_dash_stav"] = None
+                st.rerun()
+
+        # Dnes
+        with _row_cols[1]:
+            st.markdown(
+                f'<div style="text-align:center;padding-top:6px;">'
+                f'<span style="font-size:18px;font-weight:800;color:{_today_clr};">{_cnt_today}</span>'
+                f'</div>', unsafe_allow_html=True)
+
+        # Týden
+        with _row_cols[2]:
+            st.markdown(
+                f'<div style="text-align:center;padding-top:8px;font-size:13px;'
+                f'color:#2d3748;font-weight:600;">{_cnt_week}</div>', unsafe_allow_html=True)
+
+        # Celkem
+        with _row_cols[3]:
+            st.markdown(
+                f'<div style="text-align:center;padding-top:8px;font-size:13px;'
+                f'color:#718096;">{_cnt_total}</div>', unsafe_allow_html=True)
+
+        # Stav cells — clickable
+        for _si, (_sn, _sc) in enumerate(_STAVY_DASH):
             _sc_cnt = sum(1 for o in _person_log if o.get("stav", "Osloveno") == _sn)
-            _sc_txt = f'<span style="color:{_sc};font-weight:700;">{_sc_cnt}</span>' if _sc_cnt else '<span style="color:#e2e8f0;">0</span>'
-            _stav_cells += f'<td style="text-align:center;padding:8px 6px;font-size:13px;">{_sc_txt}</td>'
-
-        _tbody += f"""
-        <tr style="border-bottom:1px solid #f1ede8;">
-            <td style="padding:10px 14px;font-size:14px;font-weight:700;color:#1a1a2e;
-                white-space:nowrap;">{_tn}</td>
-            <td style="text-align:center;padding:8px 10px;">
-                <span style="font-size:20px;font-weight:800;color:{_today_clr};">{_cnt_today}</span>
-                <span style="font-size:10px;color:#a0aec0;margin-left:2px;">dnes</span>
-            </td>
-            <td style="text-align:center;padding:8px 10px;font-size:13px;color:#2d3748;font-weight:600;">
-                {_cnt_week}</td>
-            <td style="text-align:center;padding:8px 10px;font-size:13px;color:#718096;">
-                {_cnt_total}</td>
-            {_stav_cells}
-        </tr>"""
-
-    st.markdown(
-        f'<div style="background:white;border:1px solid #ece8e1;border-radius:12px;'
-        f'box-shadow:0 1px 3px rgba(0,0,0,0.04);overflow:hidden;margin-bottom:16px;">'
-        f'<table style="width:100%;border-collapse:collapse;">'
-        f'<thead><tr style="border-bottom:2px solid #ece8e1;">'
-        f'<th style="text-align:left;padding:10px 14px;font-size:10px;font-weight:700;'
-        f'color:#a0aec0;text-transform:uppercase;letter-spacing:0.5px;">Člen</th>'
-        f'<th style="text-align:center;padding:6px 8px;font-size:10px;font-weight:700;'
-        f'color:#a0aec0;text-transform:uppercase;letter-spacing:0.4px;">Dnes</th>'
-        f'<th style="text-align:center;padding:6px 8px;font-size:10px;font-weight:700;'
-        f'color:#a0aec0;text-transform:uppercase;letter-spacing:0.4px;">Týden</th>'
-        f'<th style="text-align:center;padding:6px 8px;font-size:10px;font-weight:700;'
-        f'color:#a0aec0;text-transform:uppercase;letter-spacing:0.4px;">Celkem</th>'
-        f'{_th}'
-        f'</tr></thead>'
-        f'<tbody>{_tbody}</tbody>'
-        f'</table></div>',
-        unsafe_allow_html=True)
+            with _row_cols[4 + _si]:
+                _is_active_cell = (_active_person == _tn and _active_stav == _sn)
+                if _sc_cnt > 0:
+                    if st.button(str(_sc_cnt), key=f"ds_{_tn}_{_si}",
+                                 use_container_width=True):
+                        if _is_active_cell:
+                            st.session_state["_dash_person"] = None
+                            st.session_state["_dash_stav"] = None
+                        else:
+                            st.session_state["_dash_person"] = _tn
+                            st.session_state["_dash_stav"] = _sn
+                        st.rerun()
+                else:
+                    st.markdown(
+                        '<div style="text-align:center;padding-top:8px;font-size:13px;'
+                        'color:#e2e8f0;">0</div>', unsafe_allow_html=True)
 
     # ── Správa týmu ──────────────────────────────────────────
     with st.expander("⚙️ Správa týmu"):
@@ -1494,20 +1541,42 @@ if nav == "📋 Oslovování":
     elif _os_size == "Pod 100":
         _tbl = _tbl[pd.to_numeric(_tbl["pocet_zaku"], errors="coerce") < 100]
 
-    if _os_status == "Neoslovené":
+    # Pokud je aktivní dashboard filtr, přepni automaticky na Oslovené
+    _effective_status = _os_status
+    if _active_person or _active_stav:
+        _effective_status = "Oslovené"
+
+    if _effective_status == "Neoslovené":
         _tbl = _tbl[~_tbl["izo"].astype(str).isin(_oslovene_izo)]
-    elif _os_status == "Oslovené":
+    elif _effective_status == "Oslovené":
         _tbl = _tbl[_tbl["izo"].astype(str).isin(_oslovene_izo)]
 
-    # Filtr dle stavu (jen pro oslovené)
+    # Filtr dle stavu (dropdown)
     if _os_stav != "Vše":
         _stav_izo = {o["izo"] for o in _olog if o.get("stav") == _os_stav}
         _tbl = _tbl[_tbl["izo"].astype(str).isin(_stav_izo)]
 
+    # Filtr z dashboardu (klik na buňku)
+    if _active_person:
+        _person_izo = {o["izo"] for o in _olog if o["person"] == _active_person}
+        if _active_stav:
+            _person_izo = {o["izo"] for o in _olog
+                           if o["person"] == _active_person
+                           and o.get("stav", "Osloveno") == _active_stav}
+        _tbl = _tbl[_tbl["izo"].astype(str).isin(_person_izo)]
+
     _tbl = _tbl.head(_os_limit)
 
+    _filter_info = []
+    if _os_search:
+        _filter_info.append(f"\"{_os_search}\"")
+    if _active_person:
+        _fi = _active_person
+        if _active_stav:
+            _fi += f" → {_active_stav}"
+        _filter_info.append(_fi)
     st.caption(f"Zobrazuji {len(_tbl)} škol"
-               + (f" · \"{_os_search}\"" if _os_search else ""))
+               + (f" · {' · '.join(_filter_info)}" if _filter_info else ""))
 
     # ── Header tabulky ───────────────────────────────────────
     st.markdown(
