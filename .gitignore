@@ -20,3 +20,9 @@ output/geocoding_run.log
 # Temporary
 /tmp/
 .streamlit/secrets.toml
+token.pickle
+hlidac_token.txt
+.claude/
+maps/
+reality_scraper/
+scoring/
