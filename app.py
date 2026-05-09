@@ -109,7 +109,26 @@ html, body, [class*="css"] {
                  Roboto, sans-serif !important;
     -webkit-font-smoothing: antialiased;
     font-size: 14px;
-    color: var(--slate);
+    color: #2d3748 !important;
+}
+/* Force all markdown text visible */
+.stMarkdown, .stMarkdown p, .stMarkdown span,
+.stMarkdown li, .stMarkdown h1, .stMarkdown h2,
+.stMarkdown h3, .stMarkdown h4, .stMarkdown h5 {
+    color: #2d3748 !important;
+}
+.stCaption, [data-testid="stCaptionContainer"] p {
+    color: #718096 !important;
+}
+/* Subheaders, expanders, labels */
+.stSubheader, [data-testid="stSubheader"] {
+    color: #1a1a2e !important;
+}
+details summary span {
+    color: #2d3748 !important;
+}
+label[data-testid="stWidgetLabel"] p {
+    color: #2d3748 !important;
 }
 
 /* ── Hlavní layout ── */
@@ -393,6 +412,17 @@ section[data-testid="stSidebar"] [data-testid="stMetricLabel"] p {
     font-size: 13.5px !important;
     transition: var(--transition) !important;
     padding: 6px 12px !important;
+    color: #2d3748 !important;
+    background: white !important;
+}
+/* Select/dropdown text */
+div[data-baseweb="select"] span,
+div[data-baseweb="select"] input {
+    color: #2d3748 !important;
+}
+/* Checkbox labels */
+.stCheckbox label span {
+    color: #2d3748 !important;
 }
 .stTextInput > div > div > input:focus,
 .stNumberInput > div > div > input:focus,
@@ -1332,48 +1362,42 @@ if nav == "📋 Oslovování":
                 "Přiřaď školu → pošli email → označ jako osloveno")
 
     # ── Dashboard — týmové skóre ─────────────────────────────
+    # Generuj HTML tabulku přímo — lepší kontrola nad styly
+    _dash_rows = ""
+    for _ti, _tn in enumerate(TEAM):
+        _cnt_today = _count_by(_tn, today)
+        _cnt_week = _count_by(_tn, week_start)
+        _cnt_total = sum(1 for o in _olog if o["person"] == _tn)
+        _today_clr = "#22c55e" if _cnt_today >= 5 else "#f59e0b" if _cnt_today >= 1 else "#94a3b8"
+        _dash_rows += f"""
+        <div style="background:white;border:1px solid #ece8e1;border-radius:12px;
+            padding:16px 20px;box-shadow:0 1px 3px rgba(0,0,0,0.04);text-align:center;
+            min-width:140px;">
+            <div style="font-size:14px;font-weight:700;color:#1a1a2e;margin-bottom:12px;">
+                {_tn}</div>
+            <div style="font-size:32px;font-weight:800;color:{_today_clr};line-height:1;">
+                {_cnt_today}</div>
+            <div style="font-size:10px;font-weight:600;color:#a0aec0;text-transform:uppercase;
+                letter-spacing:0.5px;margin-top:4px;">dnes</div>
+            <div style="border-top:1px solid #f0ede8;margin:10px 0;"></div>
+            <div style="display:flex;justify-content:space-around;">
+                <div>
+                    <div style="font-size:18px;font-weight:700;color:#2d3748;">{_cnt_week}</div>
+                    <div style="font-size:9px;color:#a0aec0;text-transform:uppercase;
+                        letter-spacing:0.3px;">týden</div>
+                </div>
+                <div>
+                    <div style="font-size:18px;font-weight:700;color:#718096;">{_cnt_total}</div>
+                    <div style="font-size:9px;color:#a0aec0;text-transform:uppercase;
+                        letter-spacing:0.3px;">celkem</div>
+                </div>
+            </div>
+        </div>"""
+
     st.markdown(
-        '<div style="background:white;border:1px solid #ece8e1;border-radius:12px;'
-        'padding:18px 24px;box-shadow:0 1px 3px rgba(0,0,0,0.04);margin-bottom:16px;">',
+        f'<div style="display:flex;gap:16px;margin-bottom:16px;flex-wrap:wrap;">'
+        f'{_dash_rows}</div>',
         unsafe_allow_html=True)
-
-    # Header
-    _team_cols = st.columns([1.2] + [1] * len(TEAM))
-    _team_cols[0].markdown("**Období**")
-    for _ti, _tn in enumerate(TEAM):
-        _team_cols[_ti + 1].markdown(f"**{_tn}**")
-
-    # Dnes
-    _team_cols2 = st.columns([1.2] + [1] * len(TEAM))
-    _team_cols2[0].markdown("📅 **Dnes**")
-    for _ti, _tn in enumerate(TEAM):
-        _cnt = _count_by(_tn, today)
-        _clr = "#22c55e" if _cnt >= 5 else "#f59e0b" if _cnt >= 1 else "#e2e8f0"
-        _team_cols2[_ti + 1].markdown(
-            f'<span style="background:{_clr};color:{"white" if _cnt else "#94a3b8"};'
-            f'padding:4px 14px;border-radius:8px;font-weight:800;font-size:18px;">'
-            f'{_cnt}</span>',
-            unsafe_allow_html=True)
-
-    # Tento týden
-    _team_cols3 = st.columns([1.2] + [1] * len(TEAM))
-    _team_cols3[0].markdown("📊 **Tento týden**")
-    for _ti, _tn in enumerate(TEAM):
-        _cnt = _count_by(_tn, week_start)
-        _team_cols3[_ti + 1].markdown(
-            f'<span style="font-weight:700;font-size:16px;color:#1a1a2e;">{_cnt}</span>',
-            unsafe_allow_html=True)
-
-    # Celkem
-    _team_cols4 = st.columns([1.2] + [1] * len(TEAM))
-    _team_cols4[0].markdown("🏆 **Celkem**")
-    for _ti, _tn in enumerate(TEAM):
-        _cnt = sum(1 for o in _olog if o["person"] == _tn)
-        _team_cols4[_ti + 1].markdown(
-            f'<span style="font-weight:600;font-size:14px;color:#718096;">{_cnt}</span>',
-            unsafe_allow_html=True)
-
-    st.markdown('</div>', unsafe_allow_html=True)
 
     # ── Správa týmu ──────────────────────────────────────────
     with st.expander("⚙️ Správa týmu"):
@@ -2187,7 +2211,7 @@ elif nav == "🎯 Akce dnes":
                             f'<span style="background:{item["barva"]};color:white;'
                             f'padding:2px 10px;border-radius:4px;font-size:11px;font-weight:bold;">'
                             f'{item["kategorie_label"]}</span>&nbsp;&nbsp;'
-                            f'<b style="font-size:15px;">{item["nazev"]}</b>',
+                            f'<b style="font-size:15px;color:#1a1a2e;">{item["nazev"]}</b>',
                             unsafe_allow_html=True,
                         )
                         st.caption(f"📍 {item['obec']} · {item['kraj']} · {item['zaci']} žáků")
@@ -2361,6 +2385,7 @@ elif nav == "📡 Market Intel":
                 _platce = str(_ir.get("platce", ""))
                 st.markdown(
                     f'<div style="font-size:13px;font-weight:600;padding-top:6px;'
+                    f'color:#1e293b;'
                     f'overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" '
                     f'title="{_platce}">{_platce}</div>',
                     unsafe_allow_html=True,
