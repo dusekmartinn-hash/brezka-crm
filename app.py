@@ -1474,14 +1474,14 @@ if nav == "📋 Oslovování":
     # ── Header tabulky ───────────────────────────────────────
     st.markdown(
         '<div style="display:grid;'
-        'grid-template-columns:1fr 120px 80px 50px 50px 50px 50px 140px;'
+        'grid-template-columns:1fr 120px 80px 50px 50px 50px 50px 160px;'
         'gap:4px;padding:6px 10px;background:white;border:1px solid #ece8e1;'
         'border-radius:12px 12px 0 0;border-bottom:2px solid #ece8e1;'
         'font-size:10px;font-weight:700;color:#a0aec0;text-transform:uppercase;'
         'letter-spacing:0.7px;">'
         '<div>Škola</div><div>Obec</div><div>Žáků</div>'
         '<div>🌐</div><div>📧</div><div>📞</div><div>👤</div>'
-        '<div>Oslovit</div>'
+        '<div>Přiřadit → ✓</div>'
         '</div>',
         unsafe_allow_html=True)
 
@@ -1528,13 +1528,15 @@ if nav == "📋 Oslovování":
                 f'{_zaci}</div>',
                 unsafe_allow_html=True)
 
-        # 🌐 Web
+        # 🌐 Web (search fallback if no URL)
         with _rc[3]:
             if _web and _web not in ("nan", "None", ""):
                 _web_url = _web if _web.startswith("http") else f"https://{_web}"
                 st.link_button("🌐", _web_url, use_container_width=True)
             else:
-                st.button("🌐", key=f"ow_{_ri}", disabled=True, use_container_width=True)
+                _search_url = f"https://www.google.com/search?q={urllib.parse.quote(_nazev + ' ' + _obec)}"
+                st.link_button("🔍", _search_url, use_container_width=True,
+                               help="Hledat školu na Google")
 
         # 📧 Email
         with _rc[4]:
@@ -1569,17 +1571,22 @@ if nav == "📋 Oslovování":
                     f'padding-top:6px;">✅ {_done_by}</div>',
                     unsafe_allow_html=True)
             else:
+                _btn_key = f"obtn_{_izo}"
+                _sel_key = f"osel_{_izo}"
                 _sel_person = st.selectbox(
                     "kdo", ["—"] + TEAM,
-                    label_visibility="collapsed", key=f"osel_{_ri}")
+                    label_visibility="collapsed", key=_sel_key)
                 if _sel_person != "—":
-                    st.session_state["outreach_log"].append({
-                        "izo": _izo,
-                        "person": _sel_person,
-                        "date": today.strftime("%Y-%m-%d"),
-                        "nazev": _nazev,
-                    })
-                    st.rerun()
+                    if st.button("✓", key=_btn_key, use_container_width=True):
+                        st.session_state["outreach_log"].append({
+                            "izo": _izo,
+                            "person": _sel_person,
+                            "date": today.strftime("%Y-%m-%d"),
+                            "nazev": _nazev,
+                        })
+                        # Reset selectbox
+                        del st.session_state[_sel_key]
+                        st.rerun()
 
 
 # ══════════════════════════════════════════════════════════════
