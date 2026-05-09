@@ -35,6 +35,34 @@ st.set_page_config(
 )
 
 # ─────────────────────────────────────────────────────────────
+#  Ochrana heslem
+# ─────────────────────────────────────────────────────────────
+if "authenticated" not in st.session_state:
+    st.session_state["authenticated"] = False
+
+if not st.session_state["authenticated"]:
+    st.markdown(
+        '<div style="max-width:360px;margin:120px auto;text-align:center;">'
+        '<div style="font-size:48px;margin-bottom:16px;">🔨</div>'
+        '<h2 style="color:#1a1a2e;margin-bottom:4px;">Brezka CRM</h2>'
+        '<p style="color:#718096;font-size:14px;margin-bottom:24px;">'
+        'Zadej heslo pro přístup</p>'
+        '</div>',
+        unsafe_allow_html=True,
+    )
+    _pw_col1, _pw_col2, _pw_col3 = st.columns([1, 1, 1])
+    with _pw_col2:
+        _pw = st.text_input("Heslo", type="password", label_visibility="collapsed",
+                             placeholder="Heslo...")
+        if st.button("Vstoupit", type="primary", use_container_width=True):
+            if _pw == "A2A2":
+                st.session_state["authenticated"] = True
+                st.rerun()
+            else:
+                st.error("Špatné heslo")
+    st.stop()
+
+# ─────────────────────────────────────────────────────────────
 #  CSS Design System
 # ─────────────────────────────────────────────────────────────
 st.markdown("""
