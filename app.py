@@ -1251,7 +1251,7 @@ with st.sidebar:
 
     nav = st.radio(
         "Navigace",
-        ["🏠 Přehled", "🎯 Akce dnes", "📡 Market Intel",
+        ["📋 Oslovování", "🏠 Přehled", "🎯 Akce dnes", "📡 Market Intel",
          "🗺️ Mapa", "📋 VZ Monitor",
          "📊 Analytika", "👥 CRM Pipeline", "📄 Nabídky"],
         label_visibility="collapsed",
@@ -1306,9 +1306,262 @@ with st.sidebar:
 # ─────────────────────────────────────────────────────────────
 
 # ══════════════════════════════════════════════════════════════
+#  📋 OSLOVOVÁNÍ — týmový outreach
+# ══════════════════════════════════════════════════════════════
+if nav == "📋 Oslovování":
+
+    # ── Konfigurace týmu ─────────────────────────────────────
+    if "team_members" not in st.session_state:
+        st.session_state["team_members"] = ["Matyáš", "Lukáš", "Jiřina"]
+    if "outreach_log" not in st.session_state:
+        st.session_state["outreach_log"] = []  # list of {izo, person, date, typ}
+
+    TEAM = st.session_state["team_members"]
+    _olog = st.session_state["outreach_log"]
+
+    today = datetime.now().date()
+    week_start = today - timedelta(days=today.weekday())
+    month_start = today.replace(day=1)
+
+    # ── Počty per osoba ──────────────────────────────────────
+    def _count_by(person, since):
+        return sum(1 for o in _olog if o["person"] == person
+                   and datetime.strptime(o["date"], "%Y-%m-%d").date() >= since)
+
+    page_header("📋 Týmové oslovování",
+                "Přiřaď školu → pošli email → označ jako osloveno")
+
+    # ── Dashboard — týmové skóre ─────────────────────────────
+    st.markdown(
+        '<div style="background:white;border:1px solid #ece8e1;border-radius:12px;'
+        'padding:18px 24px;box-shadow:0 1px 3px rgba(0,0,0,0.04);margin-bottom:16px;">',
+        unsafe_allow_html=True)
+
+    # Header
+    _team_cols = st.columns([1.2] + [1] * len(TEAM))
+    _team_cols[0].markdown("**Období**")
+    for _ti, _tn in enumerate(TEAM):
+        _team_cols[_ti + 1].markdown(f"**{_tn}**")
+
+    # Dnes
+    _team_cols2 = st.columns([1.2] + [1] * len(TEAM))
+    _team_cols2[0].markdown("📅 **Dnes**")
+    for _ti, _tn in enumerate(TEAM):
+        _cnt = _count_by(_tn, today)
+        _clr = "#22c55e" if _cnt >= 5 else "#f59e0b" if _cnt >= 1 else "#e2e8f0"
+        _team_cols2[_ti + 1].markdown(
+            f'<span style="background:{_clr};color:{"white" if _cnt else "#94a3b8"};'
+            f'padding:4px 14px;border-radius:8px;font-weight:800;font-size:18px;">'
+            f'{_cnt}</span>',
+            unsafe_allow_html=True)
+
+    # Tento týden
+    _team_cols3 = st.columns([1.2] + [1] * len(TEAM))
+    _team_cols3[0].markdown("📊 **Tento týden**")
+    for _ti, _tn in enumerate(TEAM):
+        _cnt = _count_by(_tn, week_start)
+        _team_cols3[_ti + 1].markdown(
+            f'<span style="font-weight:700;font-size:16px;color:#1a1a2e;">{_cnt}</span>',
+            unsafe_allow_html=True)
+
+    # Celkem
+    _team_cols4 = st.columns([1.2] + [1] * len(TEAM))
+    _team_cols4[0].markdown("🏆 **Celkem**")
+    for _ti, _tn in enumerate(TEAM):
+        _cnt = sum(1 for o in _olog if o["person"] == _tn)
+        _team_cols4[_ti + 1].markdown(
+            f'<span style="font-weight:600;font-size:14px;color:#718096;">{_cnt}</span>',
+            unsafe_allow_html=True)
+
+    st.markdown('</div>', unsafe_allow_html=True)
+
+    # ── Správa týmu ──────────────────────────────────────────
+    with st.expander("⚙️ Správa týmu"):
+        _new_member = st.text_input("Přidat člena", placeholder="Jméno...")
+        if st.button("➕ Přidat", key="add_member") and _new_member.strip():
+            if _new_member.strip() not in TEAM:
+                st.session_state["team_members"].append(_new_member.strip())
+                st.rerun()
+        if len(TEAM) > 1:
+            _del = st.selectbox("Odebrat člena", ["—"] + TEAM)
+            if st.button("🗑️ Odebrat", key="del_member") and _del != "—":
+                st.session_state["team_members"].remove(_del)
+                st.rerun()
+
+    st.divider()
+
+    # ── Filtry ───────────────────────────────────────────────
+    if schools_df.empty:
+        st.error("Data škol nenalezena. Spusť: `python main.py`")
+        st.stop()
+
+    _oslovene_izo = {o["izo"] for o in _olog}
+
+    _f1, _f2, _f3, _f4, _f5 = st.columns([2.5, 1.2, 1, 1, 0.8])
+    with _f1:
+        _os_search = st.text_input("🔍", placeholder="Název školy, obec, IČO...",
+                                    label_visibility="collapsed", key="os_search")
+    with _f2:
+        _kraje = sorted(schools_df["kraj"].dropna().unique().tolist())
+        _os_kraj = st.selectbox("Kraj", ["Vše"] + _kraje,
+                                 label_visibility="collapsed", key="os_kraj")
+    with _f3:
+        _os_size = st.selectbox("Velikost", ["Vše", "500+", "300–500", "100–300", "Pod 100"],
+                                 label_visibility="collapsed", key="os_size")
+    with _f4:
+        _os_status = st.selectbox("Stav", ["Neoslovené", "Vše", "Oslovené"],
+                                   label_visibility="collapsed", key="os_status")
+    with _f5:
+        _os_limit = st.selectbox("Řádků", [50, 100, 200, 500],
+                                  label_visibility="collapsed", key="os_limit")
+
+    # Filtrování
+    _tbl = schools_df.copy()
+    if _os_search:
+        _sq = _os_search.lower()
+        _tbl = _tbl[
+            _tbl["nazev"].str.lower().str.contains(_sq, na=False) |
+            _tbl["obec"].str.lower().str.contains(_sq, na=False) |
+            _tbl["ico"].astype(str).str.contains(_sq, na=False)
+        ]
+    if _os_kraj != "Vše":
+        _tbl = _tbl[_tbl["kraj"] == _os_kraj]
+    if _os_size == "500+":
+        _tbl = _tbl[pd.to_numeric(_tbl["pocet_zaku"], errors="coerce") >= 500]
+    elif _os_size == "300–500":
+        _zk = pd.to_numeric(_tbl["pocet_zaku"], errors="coerce")
+        _tbl = _tbl[(_zk >= 300) & (_zk < 500)]
+    elif _os_size == "100–300":
+        _zk = pd.to_numeric(_tbl["pocet_zaku"], errors="coerce")
+        _tbl = _tbl[(_zk >= 100) & (_zk < 300)]
+    elif _os_size == "Pod 100":
+        _tbl = _tbl[pd.to_numeric(_tbl["pocet_zaku"], errors="coerce") < 100]
+
+    if _os_status == "Neoslovené":
+        _tbl = _tbl[~_tbl["izo"].astype(str).isin(_oslovene_izo)]
+    elif _os_status == "Oslovené":
+        _tbl = _tbl[_tbl["izo"].astype(str).isin(_oslovene_izo)]
+
+    _tbl = _tbl.head(_os_limit)
+
+    st.caption(f"Zobrazuji {len(_tbl)} škol"
+               + (f" · \"{_os_search}\"" if _os_search else ""))
+
+    # ── Header tabulky ───────────────────────────────────────
+    st.markdown(
+        '<div style="display:grid;'
+        'grid-template-columns:1fr 120px 80px 50px 50px 50px 50px 140px;'
+        'gap:4px;padding:6px 10px;background:white;border:1px solid #ece8e1;'
+        'border-radius:12px 12px 0 0;border-bottom:2px solid #ece8e1;'
+        'font-size:10px;font-weight:700;color:#a0aec0;text-transform:uppercase;'
+        'letter-spacing:0.7px;">'
+        '<div>Škola</div><div>Obec</div><div>Žáků</div>'
+        '<div>🌐</div><div>📧</div><div>📞</div><div>👤</div>'
+        '<div>Oslovit</div>'
+        '</div>',
+        unsafe_allow_html=True)
+
+    # ── Řádky tabulky ────────────────────────────────────────
+    for _ri, (_, _rr) in enumerate(_tbl.iterrows()):
+        _izo = str(_rr.get("izo", ""))
+        _is_done = _izo in _oslovene_izo
+        _done_by = next((o["person"] for o in reversed(_olog) if o["izo"] == _izo), None)
+
+        _nazev = str(_rr.get("nazev", ""))
+        _obec = str(_rr.get("obec", ""))
+        _zaci = int(float(_rr.get("pocet_zaku", 0) or 0))
+        _email = str(_rr.get("email", "") or "")
+        _web = str(_rr.get("web", "") or "")
+        _tel = str(_rr.get("telefon", "") or "")
+        _reditel = str(_rr.get("reditel", "") or "")
+        _ico = str(_rr.get("ico", "") or "")
+
+        # Barva řádku
+        _row_bg = "#f0fdf4" if _is_done else ("white" if _ri % 2 == 0 else "#faf9f7")
+
+        _rc = st.columns([3.5, 1.2, 0.7, 0.4, 0.4, 0.4, 0.4, 1.6])
+
+        with _rc[0]:
+            _status_dot = f'<span style="color:#22c55e;font-size:8px;">●</span> ' if _is_done else ""
+            _done_label = f' <span style="color:#22c55e;font-size:11px;">({_done_by})</span>' if _done_by else ""
+            st.markdown(
+                f'<div style="font-size:13px;font-weight:600;padding-top:5px;'
+                f'overflow:hidden;text-overflow:ellipsis;white-space:nowrap;'
+                f'color:{"#64748b" if _is_done else "#1a1a2e"};" title="{_nazev}">'
+                f'{_status_dot}{_nazev}{_done_label}</div>',
+                unsafe_allow_html=True)
+
+        with _rc[1]:
+            st.markdown(
+                f'<div style="font-size:12px;color:#718096;padding-top:6px;'
+                f'overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">'
+                f'{_obec}</div>',
+                unsafe_allow_html=True)
+
+        with _rc[2]:
+            st.markdown(
+                f'<div style="font-size:12px;color:#718096;padding-top:6px;">'
+                f'{_zaci}</div>',
+                unsafe_allow_html=True)
+
+        # 🌐 Web
+        with _rc[3]:
+            if _web and _web not in ("nan", "None", ""):
+                _web_url = _web if _web.startswith("http") else f"https://{_web}"
+                st.link_button("🌐", _web_url, use_container_width=True)
+            else:
+                st.button("🌐", key=f"ow_{_ri}", disabled=True, use_container_width=True)
+
+        # 📧 Email
+        with _rc[4]:
+            if _email and _email not in ("nan", "None", ""):
+                _tmpl = EMAIL_TEMPLATES.get(
+                    get_email_template(_rr), EMAIL_TEMPLATES["priority_a"])
+                _body = _tmpl["body"]
+                st.link_button("📧", make_mailto(_email, _tmpl["subject"], _body),
+                               use_container_width=True)
+            else:
+                st.button("📧", key=f"oe_{_ri}", disabled=True, use_container_width=True)
+
+        # 📞 Telefon
+        with _rc[5]:
+            if _tel and _tel not in ("nan", "None", ""):
+                st.link_button("📞", f"tel:{_tel}", use_container_width=True)
+            else:
+                st.button("📞", key=f"ot_{_ri}", disabled=True, use_container_width=True)
+
+        # 👤 Ředitel (popover)
+        with _rc[6]:
+            with st.popover("👤"):
+                st.markdown(f"**{_reditel}**" if _reditel and _reditel != "nan" else "—")
+                if _ico and _ico != "nan":
+                    st.caption(f"IČO: {_ico}")
+
+        # Oslovit — přiřazení osoby
+        with _rc[7]:
+            if _is_done:
+                st.markdown(
+                    f'<div style="font-size:12px;color:#22c55e;font-weight:600;'
+                    f'padding-top:6px;">✅ {_done_by}</div>',
+                    unsafe_allow_html=True)
+            else:
+                _sel_person = st.selectbox(
+                    "kdo", ["—"] + TEAM,
+                    label_visibility="collapsed", key=f"osel_{_ri}")
+                if _sel_person != "—":
+                    st.session_state["outreach_log"].append({
+                        "izo": _izo,
+                        "person": _sel_person,
+                        "date": today.strftime("%Y-%m-%d"),
+                        "nazev": _nazev,
+                    })
+                    st.rerun()
+
+
+# ══════════════════════════════════════════════════════════════
 #  🏠 PŘEHLED (Dashboard)
 # ══════════════════════════════════════════════════════════════
-if nav == "🏠 Přehled":
+elif nav == "🏠 Přehled":
 
     # Lokalizovaný pozdrav
     _hour = datetime.now().hour
