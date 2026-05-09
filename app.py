@@ -1,4 +1,4 @@
-"""
+""" 
 Brezka CRM — Streamlit aplikace
 Spuštění: streamlit run app.py
 """
