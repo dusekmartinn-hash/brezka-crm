@@ -1361,42 +1361,71 @@ if nav == "📋 Oslovování":
     page_header("📋 Týmové oslovování",
                 "Přiřaď školu → pošli email → označ jako osloveno")
 
-    # ── Dashboard — týmové skóre ─────────────────────────────
-    # Generuj HTML tabulku přímo — lepší kontrola nad styly
-    _dash_rows = ""
-    for _ti, _tn in enumerate(TEAM):
+    # ── Dashboard — tabulka s rozpadem stavů ────────────────
+    _STAVY_DASH = [
+        ("Osloveno",         "🔵", "#3b82f6"),
+        ("Jednáme",          "🟡", "#f59e0b"),
+        ("Nabídka",          "🟣", "#8b5cf6"),
+        ("Ozvat se později", "⏳", "#64748b"),
+        ("Nemají zájem",     "🔴", "#ef4444"),
+        ("Vyhráno 🎉",       "🏆", "#22c55e"),
+    ]
+
+    # Header
+    _th = ''.join(
+        f'<th style="font-size:10px;font-weight:700;color:#a0aec0;text-transform:uppercase;'
+        f'letter-spacing:0.4px;padding:6px 8px;text-align:center;white-space:nowrap;"'
+        f' title="{s}">{icon}</th>'
+        for s, icon, _ in _STAVY_DASH
+    )
+    # Rows
+    _tbody = ""
+    for _tn in TEAM:
+        _person_log = [o for o in _olog if o["person"] == _tn]
         _cnt_today = _count_by(_tn, today)
         _cnt_week = _count_by(_tn, week_start)
-        _cnt_total = sum(1 for o in _olog if o["person"] == _tn)
+        _cnt_total = len(_person_log)
         _today_clr = "#22c55e" if _cnt_today >= 5 else "#f59e0b" if _cnt_today >= 1 else "#94a3b8"
-        _dash_rows += f"""
-        <div style="background:white;border:1px solid #ece8e1;border-radius:12px;
-            padding:16px 20px;box-shadow:0 1px 3px rgba(0,0,0,0.04);text-align:center;
-            min-width:140px;">
-            <div style="font-size:14px;font-weight:700;color:#1a1a2e;margin-bottom:12px;">
-                {_tn}</div>
-            <div style="font-size:32px;font-weight:800;color:{_today_clr};line-height:1;">
-                {_cnt_today}</div>
-            <div style="font-size:10px;font-weight:600;color:#a0aec0;text-transform:uppercase;
-                letter-spacing:0.5px;margin-top:4px;">dnes</div>
-            <div style="border-top:1px solid #f0ede8;margin:10px 0;"></div>
-            <div style="display:flex;justify-content:space-around;">
-                <div>
-                    <div style="font-size:18px;font-weight:700;color:#2d3748;">{_cnt_week}</div>
-                    <div style="font-size:9px;color:#a0aec0;text-transform:uppercase;
-                        letter-spacing:0.3px;">týden</div>
-                </div>
-                <div>
-                    <div style="font-size:18px;font-weight:700;color:#718096;">{_cnt_total}</div>
-                    <div style="font-size:9px;color:#a0aec0;text-transform:uppercase;
-                        letter-spacing:0.3px;">celkem</div>
-                </div>
-            </div>
-        </div>"""
+
+        # Stav counts
+        _stav_cells = ""
+        for _sn, _si, _sc in _STAVY_DASH:
+            _sc_cnt = sum(1 for o in _person_log if o.get("stav", "Osloveno") == _sn)
+            _sc_txt = f'<span style="color:{_sc};font-weight:700;">{_sc_cnt}</span>' if _sc_cnt else '<span style="color:#e2e8f0;">0</span>'
+            _stav_cells += f'<td style="text-align:center;padding:8px 6px;font-size:13px;">{_sc_txt}</td>'
+
+        _tbody += f"""
+        <tr style="border-bottom:1px solid #f1ede8;">
+            <td style="padding:10px 14px;font-size:14px;font-weight:700;color:#1a1a2e;
+                white-space:nowrap;">{_tn}</td>
+            <td style="text-align:center;padding:8px 10px;">
+                <span style="font-size:20px;font-weight:800;color:{_today_clr};">{_cnt_today}</span>
+                <span style="font-size:10px;color:#a0aec0;margin-left:2px;">dnes</span>
+            </td>
+            <td style="text-align:center;padding:8px 10px;font-size:13px;color:#2d3748;font-weight:600;">
+                {_cnt_week}</td>
+            <td style="text-align:center;padding:8px 10px;font-size:13px;color:#718096;">
+                {_cnt_total}</td>
+            {_stav_cells}
+        </tr>"""
 
     st.markdown(
-        f'<div style="display:flex;gap:16px;margin-bottom:16px;flex-wrap:wrap;">'
-        f'{_dash_rows}</div>',
+        f'<div style="background:white;border:1px solid #ece8e1;border-radius:12px;'
+        f'box-shadow:0 1px 3px rgba(0,0,0,0.04);overflow:hidden;margin-bottom:16px;">'
+        f'<table style="width:100%;border-collapse:collapse;">'
+        f'<thead><tr style="border-bottom:2px solid #ece8e1;">'
+        f'<th style="text-align:left;padding:10px 14px;font-size:10px;font-weight:700;'
+        f'color:#a0aec0;text-transform:uppercase;letter-spacing:0.5px;">Člen</th>'
+        f'<th style="text-align:center;padding:6px 8px;font-size:10px;font-weight:700;'
+        f'color:#a0aec0;text-transform:uppercase;letter-spacing:0.4px;">Dnes</th>'
+        f'<th style="text-align:center;padding:6px 8px;font-size:10px;font-weight:700;'
+        f'color:#a0aec0;text-transform:uppercase;letter-spacing:0.4px;">Týden</th>'
+        f'<th style="text-align:center;padding:6px 8px;font-size:10px;font-weight:700;'
+        f'color:#a0aec0;text-transform:uppercase;letter-spacing:0.4px;">Celkem</th>'
+        f'{_th}'
+        f'</tr></thead>'
+        f'<tbody>{_tbody}</tbody>'
+        f'</table></div>',
         unsafe_allow_html=True)
 
     # ── Správa týmu ──────────────────────────────────────────
