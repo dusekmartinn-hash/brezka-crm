@@ -1421,7 +1421,7 @@ if nav == "📋 Oslovování":
 
     _oslovene_izo = {o["izo"] for o in _olog}
 
-    _f1, _f2, _f3, _f4, _f5 = st.columns([2.5, 1.2, 1, 1, 0.8])
+    _f1, _f2, _f3, _f4, _f5, _f6 = st.columns([2.2, 1.1, 0.9, 1.0, 1.0, 0.6])
     with _f1:
         _os_search = st.text_input("🔍", placeholder="Název školy, obec, IČO...",
                                     label_visibility="collapsed", key="os_search")
@@ -1433,9 +1433,13 @@ if nav == "📋 Oslovování":
         _os_size = st.selectbox("Velikost", ["Vše", "500+", "300–500", "100–300", "Pod 100"],
                                  label_visibility="collapsed", key="os_size")
     with _f4:
-        _os_status = st.selectbox("Stav", ["Neoslovené", "Vše", "Oslovené"],
+        _os_status = st.selectbox("Kontakt", ["Neoslovené", "Vše", "Oslovené"],
                                    label_visibility="collapsed", key="os_status")
     with _f5:
+        _os_stav = st.selectbox("Stav", ["Vše", "Osloveno", "Jednáme", "Nabídka",
+                                          "Ozvat se později", "Nemají zájem", "Vyhráno 🎉"],
+                                 label_visibility="collapsed", key="os_stav")
+    with _f6:
         _os_limit = st.selectbox("Řádků", [50, 100, 200, 500],
                                   label_visibility="collapsed", key="os_limit")
 
@@ -1465,6 +1469,11 @@ if nav == "📋 Oslovování":
         _tbl = _tbl[~_tbl["izo"].astype(str).isin(_oslovene_izo)]
     elif _os_status == "Oslovené":
         _tbl = _tbl[_tbl["izo"].astype(str).isin(_oslovene_izo)]
+
+    # Filtr dle stavu (jen pro oslovené)
+    if _os_stav != "Vše":
+        _stav_izo = {o["izo"] for o in _olog if o.get("stav") == _os_stav}
+        _tbl = _tbl[_tbl["izo"].astype(str).isin(_stav_izo)]
 
     _tbl = _tbl.head(_os_limit)
 
@@ -1568,13 +1577,36 @@ if nav == "📋 Oslovování":
                         f'🏢 IČO: {_ico} → ARES</a>',
                         unsafe_allow_html=True)
 
-        # Oslovit — přiřazení osoby
+        # Oslovit — přiřazení osoby + stav
         with _rc[7]:
             if _is_done:
+                # Najdi aktuální stav z logu
+                _entry = next((o for o in reversed(_olog) if o["izo"] == _izo), {})
+                _curr_stav = _entry.get("stav", "Osloveno")
+                _stav_key = f"ostav_{_izo}"
+                _STAVY = ["Osloveno", "Jednáme", "Nabídka", "Ozvat se později",
+                          "Nemají zájem", "Vyhráno 🎉"]
+                _STAV_COLORS = {
+                    "Osloveno": "#3b82f6", "Jednáme": "#f59e0b",
+                    "Nabídka": "#8b5cf6", "Ozvat se později": "#64748b",
+                    "Nemají zájem": "#ef4444", "Vyhráno 🎉": "#22c55e",
+                }
+                _stav_clr = _STAV_COLORS.get(_curr_stav, "#64748b")
                 st.markdown(
-                    f'<div style="font-size:12px;color:#22c55e;font-weight:600;'
-                    f'padding-top:6px;">✅ {_done_by}</div>',
+                    f'<div style="font-size:11px;color:{_stav_clr};font-weight:700;'
+                    f'padding-top:2px;">{_done_by}</div>',
                     unsafe_allow_html=True)
+                _new_stav = st.selectbox(
+                    "stav", _STAVY,
+                    index=_STAVY.index(_curr_stav) if _curr_stav in _STAVY else 0,
+                    label_visibility="collapsed", key=_stav_key)
+                if _new_stav != _curr_stav:
+                    # Aktualizuj stav v logu
+                    for _o in reversed(_olog):
+                        if _o["izo"] == _izo:
+                            _o["stav"] = _new_stav
+                            break
+                    st.rerun()
             else:
                 _btn_key = f"obtn_{_izo}"
                 _sel_key = f"osel_{_izo}"
@@ -1588,8 +1620,8 @@ if nav == "📋 Oslovování":
                             "person": _sel_person,
                             "date": today.strftime("%Y-%m-%d"),
                             "nazev": _nazev,
+                            "stav": "Osloveno",
                         })
-                        # Reset selectbox
                         del st.session_state[_sel_key]
                         st.rerun()
 
