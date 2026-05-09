@@ -1561,7 +1561,12 @@ if nav == "📋 Oslovování":
             with st.popover("👤"):
                 st.markdown(f"**{_reditel}**" if _reditel and _reditel != "nan" else "—")
                 if _ico and _ico != "nan":
-                    st.caption(f"IČO: {_ico}")
+                    _ares_url = f"https://ares.gov.cz/ekonomicke-subjekty/res/{_ico}"
+                    st.markdown(
+                        f'<a href="{_ares_url}" target="_blank" '
+                        f'style="font-size:12px;color:#3b82f6;text-decoration:none;">'
+                        f'🏢 IČO: {_ico} → ARES</a>',
+                        unsafe_allow_html=True)
 
         # Oslovit — přiřazení osoby
         with _rc[7]:
