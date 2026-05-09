@@ -1375,24 +1375,8 @@ if nav == "📋 Oslovování":
     _active_person = st.session_state.get("_dash_person", None)
     _active_stav = st.session_state.get("_dash_stav", None)
 
-    # Reset tlačítko pokud je filtr aktivní
-    if _active_person or _active_stav:
-        _filt_label = ""
-        if _active_person:
-            _filt_label += _active_person
-        if _active_stav:
-            _filt_label += f" → {_active_stav}"
-        _r1, _r2 = st.columns([6, 1])
-        with _r1:
-            st.markdown(
-                f'<div style="font-size:12px;color:#3b82f6;font-weight:600;padding:4px 0;">'
-                f'Filtr: {_filt_label}</div>',
-                unsafe_allow_html=True)
-        with _r2:
-            if st.button("✕ Zrušit filtr", key="dash_reset", use_container_width=True):
-                st.session_state["_dash_person"] = None
-                st.session_state["_dash_stav"] = None
-                st.rerun()
+    # Aktivní filtr banner — NEZOBRAZUJ zde, zobrazí se nad tabulkou
+    pass
 
     # Header row
     _hdr_cols = st.columns([1.2, 0.6, 0.6, 0.6] + [0.8] * len(_STAVY_DASH))
@@ -1578,6 +1562,26 @@ if nav == "📋 Oslovování":
     st.caption(f"Zobrazuji {len(_tbl)} škol"
                + (f" · {' · '.join(_filter_info)}" if _filter_info else ""))
 
+    # ── Aktivní filtr banner ────────────────────────────────
+    if _active_person or _active_stav:
+        _filt_parts = []
+        if _active_person:
+            _filt_parts.append(f"<b>{_active_person}</b>")
+        if _active_stav:
+            _filt_parts.append(f"<b>{_active_stav}</b>")
+        _b1, _b2 = st.columns([6, 1])
+        with _b1:
+            st.markdown(
+                f'<div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;'
+                f'padding:8px 14px;font-size:13px;color:#1e40af;">'
+                f'👤 Zobrazuji školy: {" → ".join(_filt_parts)}</div>',
+                unsafe_allow_html=True)
+        with _b2:
+            if st.button("✕ Zrušit filtr", key="dash_reset", use_container_width=True):
+                st.session_state["_dash_person"] = None
+                st.session_state["_dash_stav"] = None
+                st.rerun()
+
     # ── Header tabulky ───────────────────────────────────────
     st.markdown(
         '<div style="display:grid;'
@@ -1614,7 +1618,10 @@ if nav == "📋 Oslovování":
 
         with _rc[0]:
             _status_dot = f'<span style="color:#22c55e;font-size:8px;">●</span> ' if _is_done else ""
-            _done_label = f' <span style="color:#22c55e;font-size:11px;">({_done_by})</span>' if _done_by else ""
+            # Skryj jméno osoby pokud je filtr na osobu aktivní
+            _done_label = ""
+            if _done_by and not _active_person:
+                _done_label = f' <span style="color:#22c55e;font-size:11px;">({_done_by})</span>'
             st.markdown(
                 f'<div style="font-size:13px;font-weight:600;padding-top:5px;'
                 f'overflow:hidden;text-overflow:ellipsis;white-space:nowrap;'
@@ -1690,10 +1697,12 @@ if nav == "📋 Oslovování":
                     "Nemají zájem": "#ef4444", "Vyhráno 🎉": "#22c55e",
                 }
                 _stav_clr = _STAV_COLORS.get(_curr_stav, "#64748b")
-                st.markdown(
-                    f'<div style="font-size:11px;color:{_stav_clr};font-weight:700;'
-                    f'padding-top:2px;">{_done_by}</div>',
-                    unsafe_allow_html=True)
+                # Jméno zobraz jen pokud NENÍ filtr na osobu
+                if not _active_person:
+                    st.markdown(
+                        f'<div style="font-size:11px;color:{_stav_clr};font-weight:700;'
+                        f'padding-top:2px;">{_done_by}</div>',
+                        unsafe_allow_html=True)
                 _new_stav = st.selectbox(
                     "stav", _STAVY,
                     index=_STAVY.index(_curr_stav) if _curr_stav in _STAVY else 0,
