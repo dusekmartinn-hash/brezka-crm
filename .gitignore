@@ -1,0 +1,22 @@
+# Credentials — NIKDY do repa
+oauth_credentials.json
+*.key
+*.pem
+.env
+
+# Velké datové soubory (MŠMT rejstřík ~30MB)
+data/msmt_rejstrik.jsonld
+
+# Cache & logy
+__pycache__/
+*.pyc
+.DS_Store
+*.log
+
+# Output — generované soubory
+output/brezka_mapa_skol.html
+output/geocoding_run.log
+
+# Temporary
+/tmp/
+.streamlit/secrets.toml

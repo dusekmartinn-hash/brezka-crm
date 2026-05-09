@@ -1,0 +1,59 @@
+{
+  "verze": "1.0",
+  "upraveno": "2026-04",
+  "mena": "CZK",
+  "dph_sazba": 21,
+  "kategorie": [
+    {
+      "nazev": "Lavice a stoly",
+      "produkty": [
+        {"id": "LAV-1M",  "nazev": "Lavice žákovská jednomístná",         "popis": "Výškově stavitelná, lamino/MDF, kovový rám. Rozměr 60×50 cm.",     "cena_bez_dph": 2900,  "jednotka": "ks", "min_mnozstvi": 1},
+        {"id": "LAV-2M",  "nazev": "Lavice žákovská dvoumístná",          "popis": "Výškově stavitelná, lamino/MDF, kovový rám. Rozměr 120×50 cm.",    "cena_bez_dph": 4200,  "jednotka": "ks", "min_mnozstvi": 1},
+        {"id": "STL-UCT", "nazev": "Stůl učitelský se zásuvkami",         "popis": "Masiv/lamino, 1 zásuvka + skříňka. Rozměr 140×70 cm.",             "cena_bez_dph": 6800,  "jednotka": "ks", "min_mnozstvi": 1},
+        {"id": "STL-PC",  "nazev": "Stůl počítačový/žákovský 80×60",      "popis": "Lamino, kovové nohy, výškově stavitelný. Rozměr 80×60 cm.",        "cena_bez_dph": 3400,  "jednotka": "ks", "min_mnozstvi": 1},
+        {"id": "STL-JID", "nazev": "Stůl jídelní 140×70",                 "popis": "Lamino wenge/buk, kovový rám. Vhodný do školní jídelny.",          "cena_bez_dph": 4900,  "jednotka": "ks", "min_mnozstvi": 4},
+        {"id": "LAV-CHO", "nazev": "Lavice chodba/šatna",                 "popis": "Masiv borovice, sedák + botník. Délka 150 cm.",                    "cena_bez_dph": 3600,  "jednotka": "ks", "min_mnozstvi": 1}
+      ]
+    },
+    {
+      "nazev": "Židle",
+      "produkty": [
+        {"id": "ZID-4",   "nazev": "Židle žákovská vel. 4 (130–145 cm)",  "popis": "Plastový sedák+opěrák, kovový rám. Pro 1.–2. stupeň ZŠ.",         "cena_bez_dph": 890,   "jednotka": "ks", "min_mnozstvi": 1},
+        {"id": "ZID-5",   "nazev": "Židle žákovská vel. 5 (145–160 cm)",  "popis": "Plastový sedák+opěrák, kovový rám. Pro 2. stupeň ZŠ.",             "cena_bez_dph": 890,   "jednotka": "ks", "min_mnozstvi": 1},
+        {"id": "ZID-6",   "nazev": "Židle žákovská vel. 6 (160+ cm)",     "popis": "Plastový sedák+opěrák, kovový rám. Pro SŠ a dospělé.",             "cena_bez_dph": 920,   "jednotka": "ks", "min_mnozstvi": 1},
+        {"id": "ZID-UCT", "nazev": "Židle kancelářská (učitel)",          "popis": "Výškově stavitelná, područky, kolečka. Nosnost 120 kg.",           "cena_bez_dph": 2200,  "jednotka": "ks", "min_mnozstvi": 1},
+        {"id": "ZID-JID", "nazev": "Židle jídelní stohovatelná",          "popis": "Plastový sedák, ocelový rám, stohovatelná. Různé barvy.",          "cena_bez_dph": 680,   "jednotka": "ks", "min_mnozstvi": 10}
+      ]
+    },
+    {
+      "nazev": "Skříně a úložný prostor",
+      "produkty": [
+        {"id": "SKR-1D",  "nazev": "Skříň šatní jednodveřová",            "popis": "Lamino, věšák + police. Výška 180 cm, šířka 40 cm.",              "cena_bez_dph": 3200,  "jednotka": "ks", "min_mnozstvi": 1},
+        {"id": "SKR-2D",  "nazev": "Skříň šatní dvoukřídlá",              "popis": "Lamino, věšák + 2 police. Výška 180 cm, šířka 80 cm.",            "cena_bez_dph": 4800,  "jednotka": "ks", "min_mnozstvi": 1},
+        {"id": "SKR-VIT", "nazev": "Vitrina / sklo-dveřová skříň",        "popis": "Lamino + skleněné dveře. Pro pomůcky/exponáty. 80×40×180 cm.",    "cena_bez_dph": 5600,  "jednotka": "ks", "min_mnozstvi": 1},
+        {"id": "REG-KNH", "nazev": "Regál knihovní 80×30×180",            "popis": "Lamino, 5 nastavitelných polic. Nosnost 30 kg/police.",            "cena_bez_dph": 3800,  "jednotka": "ks", "min_mnozstvi": 1},
+        {"id": "POL-NAS", "nazev": "Police nástěnná 80×25",               "popis": "Masiv borovice nebo lamino. Nosnost 20 kg. Různé délky.",          "cena_bez_dph": 980,   "jednotka": "ks", "min_mnozstvi": 1},
+        {"id": "KON-3S",  "nazev": "Kontejner pod stůl (3 zásuvky)",      "popis": "Kovový nebo lamino, kolečka. Rozměr 40×55×60 cm.",                "cena_bez_dph": 2600,  "jednotka": "ks", "min_mnozstvi": 1},
+        {"id": "SAT-SKR", "nazev": "Šatní skříňka (student, zamykatelná)","popis": "Ocel, přihrádka + věšák, zámek. 30×35×180 cm. Různé barvy.",      "cena_bez_dph": 1900,  "jednotka": "ks", "min_mnozstvi": 4}
+      ]
+    },
+    {
+      "nazev": "Vybavení tříd — ostatní",
+      "produkty": [
+        {"id": "VES-KAB", "nazev": "Věšák na kabáty (stojací, 8 háků)",   "popis": "Ocelový, stojací, 8 háků. Výška 180 cm.",                        "cena_bez_dph": 1400,  "jednotka": "ks", "min_mnozstvi": 1},
+        {"id": "TAB-BIL", "nazev": "Tabule bílá magnetická 120×90",        "popis": "Smaltovaný povrch, hliníkový rám, polička. 120×90 cm.",           "cena_bez_dph": 3200,  "jednotka": "ks", "min_mnozstvi": 1},
+        {"id": "TAB-KRI", "nazev": "Tabule křídová / zelená 200×100",      "popis": "Lakovaný povrch, dřevěný rám. 200×100 cm.",                      "cena_bez_dph": 4100,  "jednotka": "ks", "min_mnozstvi": 1},
+        {"id": "NAB-SET", "nazev": "Souprava — lavice + 2 židle (sada)",   "popis": "Lavice dvoumístná + 2 žákovské židle vel.5. Komplet.",           "cena_bez_dph": 5800,  "jednotka": "sada", "min_mnozstvi": 1}
+      ]
+    },
+    {
+      "nazev": "Služby",
+      "produkty": [
+        {"id": "SRV-DOP", "nazev": "Doprava a montáž (Praha + 50 km)",    "popis": "Doprava nákladní, montáž na místě. Cena za jeden výjezd.",        "cena_bez_dph": 3500,  "jednotka": "výjezd", "min_mnozstvi": 1},
+        {"id": "SRV-DOP2","nazev": "Doprava a montáž (50–150 km)",         "popis": "Doprava nákladní, montáž na místě. Cena za jeden výjezd.",        "cena_bez_dph": 5500,  "jednotka": "výjezd", "min_mnozstvi": 1},
+        {"id": "SRV-ZAK", "nazev": "Zakázkové zpracování (atypický kus)", "popis": "Návrh + výroba atypického kusu dle zadání. Cena hodinová.",       "cena_bez_dph": 850,   "jednotka": "hod",  "min_mnozstvi": 1},
+        {"id": "SRV-REF", "nazev": "Renovace / oprava stávajícího nábytku","popis": "Přelakování, výměna dílů, oprava čalounění. Cena dle rozsahu.",  "cena_bez_dph": 650,   "jednotka": "hod",  "min_mnozstvi": 1}
+      ]
+    }
+  ]
+}

@@ -1,0 +1,30 @@
+# Brezka CRM — závislosti
+# Instalace: pip install -r requirements.txt
+
+# Streamlit
+streamlit>=1.50.0
+streamlit-folium>=0.22.0
+plotly>=5.18.0
+
+# HTTP & scraping
+requests>=2.31.0
+beautifulsoup4>=4.12.0
+feedparser>=6.0.11
+lxml>=5.0.0
+
+# Data processing
+pandas>=2.1.0
+numpy>=1.26.0
+
+# Geokódování & vzdálenosti
+geopy>=2.4.0
+folium>=0.15.0
+
+# Google Sheets
+gspread>=6.0.0
+gspread-dataframe>=4.0.0
+google-auth>=2.27.0
+
+# Utilities
+tqdm>=4.66.0
+python-dotenv>=1.0.0
